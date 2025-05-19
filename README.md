@@ -1,23 +1,109 @@
-## Grails 6.2.3 Documentation
+Here's a simple `README.md` for your Grails project that demonstrates preserving data binding after reading the request body in a filter:
 
-- [User Guide](https://docs.grails.org/6.2.3/guide/index.html)
-- [API Reference](https://docs.grails.org/6.2.3/api/index.html)
-- [Grails Guides](https://guides.grails.org/index.html)
 ---
 
-## Feature scaffolding documentation
+````markdown
+# Grails Request Body Handling Demo
 
-- [Grails Scaffolding Plugin documentation](https://grails.github.io/scaffolding/latest/groovydoc/)
+This is a sample Grails application that demonstrates **how to read and log the HTTP request body in a filter** without breaking data binding in a controller action.
 
-- [https://grails-fields-plugin.github.io/grails-fields/latest/guide/index.html](https://grails-fields-plugin.github.io/grails-fields/latest/guide/index.html)
+It uses Spring's `ContentCachingRequestWrapper` to wrap the request, ensuring that the body is cached and readable multiple times — both in filters/interceptors and in the controller where Grails performs automatic data binding.
 
-## Feature geb documentation
+## 💡 Goal
 
-- [Grails Geb Functional Testing for Grails documentation](https://github.com/grails3-plugins/geb#readme)
+- Read and log the JSON request body in a filter.
+- Ensure Grails' data binding to a domain or command object **still works**.
+- Confirm behavior through a Spock test.
 
-- [https://www.gebish.org/manual/current/](https://www.gebish.org/manual/current/)
+---
 
-## Feature asset-pipeline-grails documentation
+## 📦 Key Components
 
-- [Grails Asset Pipeline Core documentation](https://www.asset-pipeline.com/manual/)
+- **`RequestLoggingFilter`**: A filter that wraps the request and logs the request body without consuming the input stream.
+- **`PersonController`**: A controller that binds incoming JSON to a `Person` command object.
+- **`PersonControllerSpec`**: A Spock test that ensures the request body is both logged and correctly bound in the controller.
 
+---
+
+## ✅ Running the Tests
+
+To verify that data binding still works after request body interception:
+
+```bash
+./gradlew test
+````
+
+You should see output like:
+
+```
+[role:Founder, name:Daniella]
+Request body: {"role":"Founder","name":"Daniella"}
+Binding success: Person(name: Daniella, role: Founder)
+BUILD SUCCESSFUL
+```
+
+This confirms:
+
+1. The filter accessed the request body and logged it.
+2. The controller still received and correctly bound the request to the `Person` object.
+
+---
+
+## 🧪 Sample Test
+
+The test sends a JSON POST request:
+
+```groovy
+when:
+def response = rest.post("http://localhost:$port/person") {
+    contentType('application/json')
+    body([name: 'Daniella', role: 'Founder'])
+}
+
+then:
+response.status == 200
+response.json.name == 'Daniella'
+response.json.role == 'Founder'
+```
+
+---
+
+## 🛠 Stack
+
+* Grails 5.x
+* Spock Framework
+* Spring Web's `ContentCachingRequestWrapper`
+
+---
+
+## 🧼 Notes
+
+* Avoid using `request.JSON` or accessing the input stream directly in filters unless wrapped properly.
+* This approach also works for form-encoded or other content types (with some additional tweaks).
+
+---
+
+## 📁 Structure
+
+```
+grails-app/
+├── controllers/
+│   └── PersonController.groovy
+├── filters/
+│   └── RequestLoggingFilter.groovy
+├── domain/
+│   └── Person.groovy
+src/test/groovy/
+├── PersonControllerSpec.groovy
+```
+
+---
+
+## License
+
+MIT
+
+```
+
+Let me know if you want this tailored for multipart/form-data or a Grails 4-compatible version.
+```
