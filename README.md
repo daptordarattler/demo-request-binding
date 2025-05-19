@@ -96,14 +96,3 @@ grails-app/
 src/test/groovy/
 ├── PersonControllerSpec.groovy
 ```
-
----
-
-## License
-
-MIT
-
-```
-
-Let me know if you want this tailored for multipart/form-data or a Grails 4-compatible version.
-```
